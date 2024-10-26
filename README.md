@@ -1,4 +1,4 @@
-# Multi-frequency Models for AART
+ # Multi-frequency Models for AART
 This repository is an extended version of AART, a full detailed description of which is at https://github.com/iAART/aart.
 
 These modifications focus on various physical parameters affecting the AART emission profile behavior. The simulation includes calculations of temperature, density, magnetic fields, and specific intensity, tailored for astrophysical contexts.
@@ -38,7 +38,7 @@ Parameters
 
 The following parameters can be adjusted to modify the simulation:
 
-    |Parameter| Description                                                       |    Base Value |
+|Parameter| Description                                                       |    Base Value |
     |---------|-------------------------------------------------------------------|---------------|
     | nu      | Observation frequency                                             |          230e9|
     | mass    | blackhole mass                                                    |     6.5e9 Msun| 
