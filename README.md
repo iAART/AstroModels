@@ -38,7 +38,7 @@ Parameters
 
 The following parameters can be adjusted to modify the simulation:
 
-|Parameter| Description                                                       |    Base Value |
+    |Parameter| Description                                                       |    Base Value |
     |---------|-------------------------------------------------------------------|---------------|
     | nu      | Observation frequency                                             |          230e9|
     | mass    | blackhole mass                                                    |     6.5e9 Msun| 
