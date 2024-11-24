@@ -11,13 +11,14 @@ These modifications focus on various physical parameters affecting the AART emis
 - [Parameters](#parameters)
 - [Example](#examples)
 
-## Installation
+_______
+### Installation
 
 To use this simulation, clone the repository and install the required packages:
 
 ```bash
-git clone https://github.com/yourusername/black-hole-simulation.git
-cd black-hole-simulation
+git clone https://github.com/iAART/AstroModels.git
+cd AstroModels
 pip install -r requirements.txt
 ```
 
@@ -27,14 +28,17 @@ Ensure you have Python 3.x and the following libraries installed:
     SciPy
     Astropy
     lmfit
+_______
+### Key Features
 
-Key Features
+   * **Radial Profiles**
+   All major additions are contained in AstroModels/aart_func/rprofs_f.py
     
-    Temperature, Density Profiles, and Magnetic Field Strength: Calculate the electron temperature and density as functions of distance from the black hole, as well as the Magnetic field strength.
-    Synchrotron Emission: Models synchrotron radiation for different configurations and astrophysical parameters.
-    Noisy Density and Temperature Profiles: Incorporates noise in density and temperature for realistic simulations.
-
-Parameters
+   * Temperature, Density Profiles, and Magnetic Field Strength: Calculate the electron temperature and density as functions of distance from the black hole, as well as the Magnetic field strength.
+   * Synchrotron Emission: Models synchrotron radiation for different configurations and astrophysical parameters.
+   * Noisy Density and Temperature Profiles: Incorporates noise in density and temperature for realistic simulations.
+_______
+### Parameters
 
 The following parameters can be adjusted to modify the simulation:
 
@@ -56,6 +60,8 @@ The following parameters can be adjusted to modify the simulation:
     Function keys: The choice to add Inoisy purturbations to the density, temperature, and/or magnetic field strength power laws.
 
 Refer to the code comments for detailed descriptions of each parameter and its units.
-Examples
+
+_______
+### Examples
 
 And example run of the code can be found as "ExampleMultiFrequency.ipynb"
