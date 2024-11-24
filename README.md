@@ -57,7 +57,7 @@ The following parameters can be adjusted to modify the simulation:
 | pmag    | Sets decay speed for the magnetic field power law                 |           -1.5|
 | nscale  | inosiy perturbation scale                                         |             .3|
    
-    Function keys: The choice to add Inoisy purturbations to the density, temperature, and/or magnetic field strength power laws.
+* Function keys: The choice to add Inoisy purturbations to the density, temperature, and/or magnetic field strength power laws.
 
 Refer to the code comments for detailed descriptions of each parameter and its units.
 
