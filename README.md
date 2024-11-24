@@ -31,7 +31,7 @@ Ensure you have Python 3.x and the following libraries installed:
 _______
 ### Key Features
 
-   * **Radial Profiles**
+   * **Radial Profiles:**
    All major additions are contained in AstroModels/aart_func/rprofs_f.py
     
    * Temperature, Density Profiles, and Magnetic Field Strength: Calculate the electron temperature and density as functions of distance from the black hole, as well as the Magnetic field strength.
@@ -43,7 +43,7 @@ _______
 The following parameters can be adjusted to modify the simulation:
 
     |Parameter| Description                                                       |    Base Value |
-    |---------|-------------------------------------------------------------------|---------------|
+    | ------- | ----------------------------------------------------------------- | ------------- |
     | nu      | Observation frequency                                             |          230e9|
     | mass    | blackhole mass                                                    |     6.5e9 Msun| 
     | scaleh  | plasma disk scale height                                          |            0.5|
