@@ -1,6 +1,6 @@
  # Multi-frequency Models for AART
 _______
-Desire, T., Cardenas-Avendano, A., & Chael, A. 2024,arXiv e-prints, arXiv:2411.17884,doi: 10.48550/arXiv.2411.17884
+Desire, T., Cardenas-Avendano, A., & Chael, A. 2024, arXiv e-prints, [arXiv:2411.17884](http://arxiv.org/abs/2411.17884)
 _______
 This repository is an extended version of AART, a full detailed description of which is at https://github.com/iAART/aart.
 
