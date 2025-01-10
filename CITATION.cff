@@ -1,0 +1,37 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: AART Astro Models
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Desire
+    family-names: Tejahni
+    orcid: 'https://orcid.org/0009-0008-3202-2972'
+  - given-names: Alejandro
+    family-names: C\'ardenas-Avenda\~no
+    orcid: 'https://orcid.org/0000-0001-9528-1826'
+  - given-names: Andrew
+    family-names: Chael
+    orcid: 'https://orcid.org/0000-0003-2966-6220'
+identifiers:
+  - type: url
+    value: 'https://doi.org/10.48550/arXiv.2411.17884'
+repository-code: 'https://github.com/iAART/AstroModels'
+abstract: >-
+  A physical-based accretion disk emission model coupled to
+  the Adaptive Analytical Ray Tracing (AART) code that
+  allows a fast parameter space exploration of black hole
+  photon rings produced from synchrotron emission from 10 to
+  670 GHz.
+keywords:
+  - black holes
+  - accretion
+  - images
+  - photon rings
+license: MIT
+version: '1.0'
+date-released: '2025-01-10'
