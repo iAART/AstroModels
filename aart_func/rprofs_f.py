@@ -8,7 +8,6 @@ from astropy import constants as const
 from astropy import units as u
 from lmfit import Parameters, minimize, fit_report
 from scipy.special import gamma
-import EZPaths
 
 # All r in units of Rg
 # Constants
@@ -16,7 +15,6 @@ import EZPaths
 # TODO Units of the images pixel value
 # TODO find values to change j coeff peak to occur between 3-20rg
 
-inoisy_path = EZPaths.aartPath + '/'
 # Constants
 G = const.G.cgs
 c = const.c.cgs
@@ -312,7 +310,7 @@ def inoisy_radius():
 
 
 def inoisy_interp(envelope, scale):  # given an envelope, return noisy version to be evaluated at x and y grid
-    GRF = np.load(inoisy_path + "Inoisy_Snap_Keplerian_5.00_0.10_0.94_0.349.npy")
+    GRF = np.load("Inoisy_Snap_Keplerian_5.00_0.10_0.94_0.349.npy")
     radius, Xs, Ys = inoisy_radius()
     density = envelope * np.exp(scale * GRF - 1/2 * scale ** 2)
     return RegularGridInterpolator((Xs, Ys), density, fill_value=1, bounds_error=False, method='linear')
