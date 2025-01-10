@@ -18,8 +18,8 @@ authors:
     family-names: Chael
     orcid: 'https://orcid.org/0000-0003-2966-6220'
 identifiers:
-  - type: url
-    value: 'https://doi.org/10.48550/arXiv.2411.17884'
+  - type: doi
+    value: 10.5281/zenodo.14629535
 repository-code: 'https://github.com/iAART/AstroModels'
 abstract: >-
   A physical-based accretion disk emission model coupled to

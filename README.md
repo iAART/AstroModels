@@ -1,4 +1,6 @@
 [![2211.07469](https://img.shields.io/badge/arXiv-2411.17884-b31b1b.svg)](https://arxiv.org/abs/2411.17884) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/iAART/aart/License.txt) [![GitHub repo stars](https://img.shields.io/github/stars/iAART/AstroModels?style=social)](https://github.com/iAART/AstroModels)
+[![DOI](https://zenodo.org/badge/873706198.svg)](https://doi.org/10.5281/zenodo.14629535)
+
 
 # Multi-frequency Models for AART
 _______
