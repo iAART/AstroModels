@@ -1,10 +1,23 @@
- # Multi-frequency Models for AART
+[![2211.07469](https://img.shields.io/badge/arXiv-2411.17884-b31b1b.svg)](https://arxiv.org/abs/2411.17884) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/iAART/aart/License.txt) [![GitHub repo stars](https://img.shields.io/github/stars/iAART/AstroModels?style=social)](https://github.com/iAART/AstroModels)
+
+# Multi-frequency Models for AART
 _______
 Desire, T., Cardenas-Avendano, A., & Chael, A. 2024, arXiv e-prints, [arXiv:2411.17884](http://arxiv.org/abs/2411.17884)
 _______
 This repository is an extended version of AART, a full detailed description of which is at https://github.com/iAART/aart.
 
 These modifications focus on various physical parameters affecting the AART emission profile behavior. The simulation includes calculations of temperature, density, magnetic fields, and specific intensity, tailored for astrophysical contexts.
+
+_______
+
+We also request that modifications or extensions leading to a scientific publication be made public as free software. 
+
+<center> <em>Feel free to use images and movies produced with this code (with attribution) for your next presentation! </em> </center>
+
+_______
+![GitHub last commit](https://img.shields.io/github/last-commit/iAART/AstroModels)
+_______
+
 
 ## Table of Contents
 
