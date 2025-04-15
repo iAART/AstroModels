@@ -147,27 +147,8 @@ def gGas(r,a,b,lamb,eta):
 
     return 1/(ut*(1-b*np.sign(ur)*sqrt(np.abs(Rint(r,a,lamb,eta)*ur**2))/Delta(r,a)/ut-lamb*uphi/ut))
 
-#TODO: This expression will just work for sure for the Keplerian velocity. 
-# I need to check if it has to be modified for the general four-velocity
-def CosAng(r,a,b,lamb,eta):
-    """
-    Calculates the cosine of the emission angle
-    :param r: radius of the source
-    :param a: spin of the black hole
-    :param b: sign for the redshift
-    :param lamb: angular momentum
-    :param eta: Carter constant
-
-    :return: the  cosine of the emission angle
-    """
-    #From eta, solve for Sqrt(p_\theta/p_t)
-    kthkt=np.sqrt(eta)
-    #Sqrt(g^{\theta\theta}) Evaluated at the equatorial plane
-    thth=1/r
-    return thth*gDisk(r,a,b,lamb,eta)*kthkt
-
 #calculate the observed brightness for a purely radial profile
-def bright_radial(grid,mask,redshift_sign,anglen,a,rs,isco,thetao,brightparams,funckeys,phi):
+def bright_radial(grid,mask,redshift_sign,anglen,a,rs,isco,thetao,brightparams,funckeys,phis,ts,interpolator):
     """
     Calculate the brightness of a rotationally symmetric disk
     (Eq. 50 P1)
@@ -192,38 +173,30 @@ def bright_radial(grid,mask,redshift_sign,anglen,a,rs,isco,thetao,brightparams,f
 
     si_thin = np.zeros(rs.shape[0])
     si_thick = np.zeros(rs.shape[0])
-    # full_profiles = np.zeros(shape=(7,rs.shape[0]))
+
     full_profiles = np.zeros(shape=(8, rs.shape[0]))
     tau = np.zeros(rs.shape[0])
     redshift_sign = redshift_sign[mask]
-    # anglen = anglen[mask]
 
-    x_aux=rs*np.cos(phi)
-    y_aux=rs*np.sin(phi)
+    x_aux=rs*np.cos(phis)
+    y_aux=rs*np.sin(phis)
 
-    # rs_inner = rs[rs>=isco]
-    # rs_outer = rs[rs<isco]
-    redshift_inner = gDisk(rs[rs>=isco],a,redshift_sign[rs>=isco],lamb[rs>=isco],eta[rs>=isco])
-    redshift_outter = gGas(rs[rs<isco],a,redshift_sign[rs<isco],lamb[rs<isco],eta[rs<isco])
+    redshift_outter= gDisk(rs[rs>=isco],a,redshift_sign[rs>=isco],lamb[rs>=isco],eta[rs>=isco])
+    redshift_inner = gGas(rs[rs<isco],a,redshift_sign[rs<isco],lamb[rs<isco],eta[rs<isco])
 
-    CosAng_inner = CosAng(rs[rs>=isco],a,redshift_inner,lamb[rs>=isco],eta[rs>=isco])
-    CosAng_outter = CosAng(rs[rs<isco],a,redshift_outter,lamb[rs<isco],eta[rs<isco])
-
-    # r_p = 1 + np.sqrt(1 - a ** 2)
-    # CosAng_inner[rs_inner<=r_p] = 1
-    # CosAng_outter[rs_outer<=r_p] = 1
-
-    # CosAng_inner[np.isnan(CosAng_inner)] = 1
-    # CosAng_outter[np.isnan(CosAng_outter)] = 1
+    CosAng_outter = CosAng(rs[rs>=isco],a,redshift_outter,lamb[rs>=isco],eta[rs>=isco])
+    CosAng_inner = CosAng(rs[rs<isco],a,redshift_inner,lamb[rs<isco],eta[rs<isco])
 
     ilp.set_b_params(brightparams["mass"],brightparams["beta"],brightparams["rb_0"],brightparams["n_th0"],brightparams["p_dens"])
 
-    coords_inner = {
+    coords_outter = {
+        "t": ts[rs>=isco],
         "r": rs[rs>=isco],
         "x": x_aux[rs>=isco],
         "y": y_aux[rs>=isco]
     }
-    coords_outter = {
+    coords_inner = {
+        "t": ts[rs<isco],
         "r": rs[rs<isco],
         "x": x_aux[rs<isco],
         "y": y_aux[rs<isco]
@@ -234,117 +207,33 @@ def bright_radial(grid,mask,redshift_sign,anglen,a,rs,isco,thetao,brightparams,f
         1: ilp.power_profile
     }
     si_thin[rs>=isco], si_thick[rs>=isco], tau[rs>=isco], full_profiles[:,rs>=isco] = emissionmodel[
-        funckeys["emodelkey"]](coords_inner,redshift_inner,CosAng_inner,anglen[rs>=isco],brightparams,funckeys)
+        funckeys["emodelkey"]](coords_outter,redshift_outter,CosAng_outter,interpolator,anglen[rs>=isco],brightparams,funckeys)
+
     si_thin[rs<isco], si_thick[rs<isco], tau[rs<isco], full_profiles[:,rs<isco] = emissionmodel[
-        funckeys["emodelkey"]](coords_outter,redshift_outter,CosAng_outter,anglen[rs<isco],brightparams,funckeys)
+        funckeys["emodelkey"]](coords_inner,redshift_inner,CosAng_inner,interpolator,anglen[rs<isco],brightparams,funckeys)
 
     r_p = 1+np.sqrt(1-a**2)
-    # si_thin[rs<=r_p] = 0
-    si_thin[rs <= r_p] = -np.inf
-
-    # cosAngReturn[rs>=isco] = CosAng_inner
-    # cosAngReturn[rs<isco] = CosAng_outter
-
+    si_thin[rs <= r_p] = np.nan
 
     return si_thin, si_thick, tau, full_profiles
 
-
-#calculate the observed brightness for an arbitrary profile, passed in as the interpolation object
-#but ignoring the time delay due to lensing
-def fast_light(grid,mask,redshift_sign,a,isco,rs,th,interpolation,thetao):
-    """
-    Calculate the black hole image ignoring the time delay due to lensing or geometric effect
-    (Eq. 116 P1)
-    :param grid: alpha and beta grid on the observer plane on which we evaluate the observables
-    :param mask: mask out the lensing band, see lb_f.py for detail
-    :param redshift_sign: sign of the redshift
-    :param a: black hole spin
-    :param isco: radius of the inner-most stable circular orbit
-    :param rs: source radius
-    :param th: source angle, polar coordinate
-    :param interpolation: 2 dimensional brightness function of the source, interpolation object
-    :param thetao: observer inclination
-
-    :return: image of a lensed equitorial source with only radial dependence. 
-    """
-    alpha = grid[:,0][mask]
-    beta = grid[:,1][mask]
-    rs = rs[mask]
-    th = th[mask]
-    lamb,eta = rt.conserved_quantities(alpha,beta,thetao,a)
-    brightness = np.zeros(rs.shape[0])
-    redshift_sign = redshift_sign[mask]
-
-    x_aux=rs*np.cos(th)
-    y_aux=rs*np.sin(th)
-
-    brightness[rs>=isco]= gDisk(rs[rs>=isco],a,redshift_sign[rs>=isco],lamb[rs>=isco],eta[rs>=isco])**gfactor*interpolation(np.vstack([x_aux[rs>=isco],y_aux[rs>=isco]]).T)
-    brightness[rs<isco]= gGas(rs[rs<isco],a,redshift_sign[rs<isco],lamb[rs<isco],eta[rs<isco])**gfactor*interpolation(np.vstack([x_aux[rs<isco],y_aux[rs<isco]]).T)
-
-    r_p = 1+np.sqrt(1-a**2)
-    brightness[rs<=r_p] = 0
-
-    I = np.zeros(mask.shape)
-    I[mask] = brightness
-    return(I)
-
-
-#calculate the observed brightness for an arbitrary, evolving profile, passed in as the interpolation object
-def slow_light(grid,mask,redshift_sign,a,isco,rs,th,ts,interpolation,thetao):
-    """
-    Calculate the black hole image including the time delay due to lensing and geometric effect
-    (Eq. 50 P1)
-
-    :param grid: alpha and beta grid on the observer plane on which we evaluate the observables
-    :param mask: mask out the lensing band, see lb_f.py for detail
-    :param redshift_sign: sign of the redshift
-    :param a: black hole spin
-    :param isco: radius of the inner-most stable circular orbit
-    :param rs: source radius
-    :param th: source angle, polar coordinate
-    :param ts: time of emission at the source
-    :param interpolation: a time series of 2 dimensional brightness function of the source, 3d interpolation object
-    :param thetao: observer inclination
-
-    :return: image of a lensed equitorial source with only radial dependence. 
-    """
-    alpha = grid[:,0][mask]
-    beta = grid[:,1][mask]
-    rs = rs[mask]
-    th = th[mask]
-    ts = ts[mask]
-    lamb,eta = rt.conserved_quantities(alpha,beta,thetao,a)
-    brightness = np.zeros(rs.shape[0])
-    redshift_sign = redshift_sign[mask]
-
-    x_aux=rs*np.cos(th)
-    y_aux=rs*np.sin(th)
-
-    brightness[rs>=isco]= gDisk(rs[rs>=isco],a,redshift_sign[rs>=isco],lamb[rs>=isco],eta[rs>=isco])**gfactor*interpolation(np.vstack([ts[rs>=isco],x_aux[rs>=isco],y_aux[rs>=isco]]).T)
-    brightness[rs<isco]= gGas(rs[rs<isco],a,redshift_sign[rs<isco],lamb[rs<isco],eta[rs<isco])**gfactor*interpolation(np.vstack([ts[rs<isco],x_aux[rs<isco],y_aux[rs<isco]]).T)
-
-    r_p = 1+np.sqrt(1-a**2)
-    brightness[rs<=r_p] = 0
-
-    I = np.zeros(mask.shape)
-    I[mask] = brightness
-    return(I)
-
-
-def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,anglen1,supergrid2,mask2,N2,rs2,sign2,anglen2,brightparams,funckeys,phi012):
+def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,anglen1,supergrid2,mask2,N2,rs2,sign2,anglen2,brightparams,funckeys,phi012,t012,interpolator):
     """
     Calculate and save the radial brightness profile
     """
 
-    # Warning: si_thin is a decomposition while si_thick is cumulative
+    # Note: si_thin is a decomposition while si_thick is cumulative
 
     full_intensity = np.zeros(rs2.shape)
     # I2-------------
     rs2 = rs2[mask2]
     phi2 = phi012[2][mask2]
+    t2 = t012[2][mask2]
+
     anglen2 = anglen2[mask2]
+
     si_thin2, si_thick2, tau2mask2, full_profiles2= bright_radial(
-        supergrid2,mask2,sign2,anglen2,spin_case,rs2,isco,thetao,brightparams,funckeys,phi2)
+        supergrid2,mask2,sign2,anglen2,spin_case,rs2,isco,thetao,brightparams,funckeys,phi2,t2,interpolator)
 
     I2_thin = np.zeros(mask2.shape)
     I2_thin[mask2] = si_thin2
@@ -361,11 +250,11 @@ def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,angle
     # I1-------------
     rs1 = rs1[mask1]
     phi1 = phi012[1][mask1]
+    t1 = t012[1][mask1]
     anglen1 = anglen1[mask1]
+
     si_thin1, si_thick1, tau1mask1, full_profiles1 = bright_radial(
-        supergrid1, mask1, sign1, anglen1, spin_case,rs1, isco, thetao, brightparams, funckeys, phi1)
-
-
+        supergrid1, mask1, sign1, anglen1, spin_case,rs1, isco, thetao, brightparams, funckeys, phi1,t1,interpolator)
 
     I1_thin = np.zeros(mask1.shape)
     I1_thin[mask1] = si_thin1
@@ -381,9 +270,10 @@ def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,angle
     # I0-------------
     rs0 = rs0[mask0]
     phi0 = phi012[0][mask0]
+    t0 = t012[0][mask0]
     anglen0 = anglen0[mask0]
     si_thin0, si_thick0, tau0mask0, full_profiles0 = bright_radial(
-        supergrid0, mask0, sign0, anglen0, spin_case,rs0, isco, thetao, brightparams, funckeys, phi0)
+        supergrid0, mask0, sign0, anglen0, spin_case,rs0, isco, thetao, brightparams, funckeys, phi0,t0, interpolator)
 
     I0_thin = np.zeros(mask0.shape)
     I0_thin[mask0] = si_thin0
@@ -410,9 +300,7 @@ def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,angle
     I0_temp_thin = I0_temp_thin.reshape(N0, N0).T
     I1_temp_thin = I1_temp_thin.reshape(N1, N1).T
     I2_temp_thin = I2_temp_thin.reshape(N2, N2).T
-    # tau0 = tau0.reshape(N0, N0).T
-    # tau1 = tau1.reshape(N0, N0).T
-    # tau2 = tau2.reshape(N0, N0).T
+
     full_temp = full_temp.reshape(N0, N0).T
 
     filename = fileloading.intensityNameWrite(brightparams,funckeys)
@@ -423,10 +311,6 @@ def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,angle
     full_profiles2resized = np.ndarray((num_of_profiles, mask2.shape[0]))
     full_profiles1resized = np.ndarray((num_of_profiles, mask1.shape[0]))
     full_profiles0resized = np.ndarray((num_of_profiles, mask0.shape[0]))
-
-    # full_profiles0Grid = np.empty([num_of_profiles],dtype=object)
-    # full_profiles1Grid = np.empty([num_of_profiles],dtype=object)
-    # full_profiles2Grid = np.empty([num_of_profiles],dtype=object)
 
     full_profiles0Grid = np.ndarray([num_of_profiles,N0,N0])
     full_profiles1Grid = np.ndarray([num_of_profiles,N1,N1])
@@ -459,7 +343,6 @@ def br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,angle
     h5f.create_dataset('full_profiles2', data=full_profiles2Grid)
     h5f.create_dataset('full_profiles1', data=full_profiles1Grid)
     h5f.create_dataset('full_profiles0', data=full_profiles0Grid)
-
 
     h5f.close()
 
@@ -555,6 +438,7 @@ def flare_model(grid,mask,redshift_sign,a,rs,th,ts,thetao,rwidth,delta_t):
 
     x_aux = rs*np.cos(th)
     y_aux = rs*np.sin(th)
+    
     # x0 and y0 is now a function of t, where one can specify an arbitrary equitorial orbit
     brightness = np.exp(-(x_aux-x0(ts+delta_t))**2/rwidth**2-(y_aux-y0(ts+delta_t))**2/rwidth**2)
 
@@ -568,36 +452,8 @@ def flare_model(grid,mask,redshift_sign,a,rs,th,ts,thetao,rwidth,delta_t):
     I[mask] = brightness
     return(np.nan_to_num(I))
 
-
-# def CosAng(r,a,b,lamb,eta):
-#     """
-#     Calculates the cosine of the emission angle
-#     :param r: radius of the source
-#     :param a: spin of the black hole
-#     :param lamb: angular momentum
-#
-#     :return: the  cosine of the emission angle
-#     """
-#     #From eta, solve for Sqrt(p_\theta/p_t)
-#     kthkt=np.sqrt(eta+a**2-lamb**2/(np.tan(thetao)**2))
-#     #Sqrt(g^{\theta\theta}) Evaluated at the equatorial plane
-#     thth=1/r
-#     return thth*gDisk(r,a,b,lamb,eta)*kthkt
-
-# def CosAng(r,a,b,lamb,eta):
-#     """
-#     Calculates the cosine of the emission angle
-#     :param r: radius of the source
-#     :param a: spin of the black hole
-#     :param lamb: angular momentum
-#     :return: the  cosine of the emission angle
-#     """
-#     #From eta, solve for Sqrt(p_\theta/p_t)
-#     kthkt=np.sqrt(eta)
-#     #Sqrt(g^{\theta\theta}) Evaluated at the equatorial plane
-#     thth=1/r
-#     return thth*gDisk(r,a,b,lamb,eta)*kthkt
-
+#TODO: This expression will just work for sure for the Keplerian velocity. 
+# I need to check if it has to be modified for the general four-velocity
 def CosAng(r,a,redshift,lamb,eta):
     """
     Calculates the cosine of the emission angle

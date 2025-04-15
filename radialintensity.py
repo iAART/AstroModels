@@ -2,7 +2,6 @@ from aart_func import *
 from params import *
 import argparse
 
-
 parser = argparse.ArgumentParser(description='Intensity as function of radial distance from black hole')
 parser.add_argument('--nu', default=ilp.kw_nu0.value, type=float)
 parser.add_argument('--mass', default=ilp.kw_mass.value, type=float)
@@ -72,10 +71,29 @@ else:
 print("Reading file: ",fnrays)
 
 h5f = h5py.File(fnrays,'r')
+
 phi012 = [
 	h5f['phi0'][:],
-	h5f['phi0'][:],
-	h5f['phi0'][:]
+	h5f['phi1'][:],
+	h5f['phi2'][:]
+	]
+
+fact=-(D_obs+2*np.log(D_obs))
+
+t0rt=h5f['t0'][:]
+t1rt=h5f['t1'][:]
+t2rt=h5f['t2'][:]
+
+t0rt-=fact
+t1rt-=fact
+t2rt-=fact
+
+fact2=5000/2-np.nanmax(t0rt) #GENERALIZE!
+
+t012 = [
+	t0rt+fact2,
+	t1rt+fact2,
+	t2rt+fact2
 	]
 
 h5f.close()
@@ -140,7 +158,7 @@ if bvapp!=1:
 	h5f.close()
 
 	obsint.br(supergrid0,mask0,N0,rs0,sign0,anglen0,supergrid1,mask1,N1,rs1,sign1,anglen1,
-			  supergrid2,mask2,N2,rs2,sign2,anglen2,brightparams,funckeys,phi012)
+			  supergrid2,mask2,N2,rs2,sign2,anglen2,brightparams,funckeys,phi012,t012)
 else:
 
 	h5f.close()

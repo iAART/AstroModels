@@ -18,8 +18,6 @@ def createIntensityArgs(brightparams,lband="0",rtray="0",magAng="0",funckeys=fun
         "mass": '--mass ',
         "scale_height": '--scaleh ',
         "theta_b": '--thetab ',
-        "beta": '--beta ',
-        "r_ie": '--rie ',
         "rb_0": '--rb0 ',
         "n_th0": '--nth0 ',
         "t_e0": '--te0 ',
@@ -50,11 +48,11 @@ def createIntensityArgs(brightparams,lband="0",rtray="0",magAng="0",funckeys=fun
 
     args += "--lband " + lband + " --rtray " + rtray + " --magang " + magAng
 
-    return 'python3 radialintensity.py' + args
+    return 'python3 intensity.py' + args
 
 
 def intensityNameWrite(brightparams,funckeys=funckeys):
-    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_beta_{}_rie_{}_rb_{}_nth0_{}_te0_{}_'
+    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
                        'b0_{}_pdens_{}_ptemp_{}_pmag_{}_nscale_{}_emkey_{}_bkey_{}_nkey_{}_tnkey_{}_bnkey_{}_magkey_{}.h5').format(
         params.spin_case,
         i_case,
@@ -62,8 +60,6 @@ def intensityNameWrite(brightparams,funckeys=funckeys):
         "{:.5e}".format(brightparams["mass"].value),
         float(brightparams["scale_height"]),
         "{:.3f}".format(brightparams["theta_b"].value),
-        "{:.2f}".format(float(brightparams["beta"])),
-        "{:.1f}".format(float(brightparams["r_ie"])),
         "{:.1f}".format(float(brightparams["rb_0"])),
         "{:.1e}".format(brightparams["n_th0"].value),
         "{:.1e}".format(brightparams["t_e0"].value),
@@ -85,7 +81,7 @@ def intensityNameWrite(brightparams,funckeys=funckeys):
 
 def intensityNameNoUnits(brightparams,funckeys=funckeys):
 
-    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_beta_{}_rie_{}_rb_{}_nth0_{}_te0_{}_'
+    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
                        'b0_{}_pdens_{}_ptemp_{}_pmag_{}_nscale_{}_emkey_{}_bkey_{}_nkey_{}_tnkey_{}_bnkey_{}_magkey_{}.h5').format(
         params.spin_case,
         i_case,
@@ -93,8 +89,6 @@ def intensityNameNoUnits(brightparams,funckeys=funckeys):
         "{:.5e}".format(brightparams["mass"]),
         float(brightparams["scale_height"]),
         "{:.3f}".format(brightparams["theta_b"]),
-        "{:.2f}".format(float(brightparams["beta"])),
-        "{:.1f}".format(float(brightparams["r_ie"])),
         "{:.1f}".format(float(brightparams["rb_0"])),
         "{:.1e}".format(brightparams["n_th0"]),
         "{:.1e}".format(brightparams["t_e0"]),

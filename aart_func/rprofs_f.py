@@ -37,9 +37,7 @@ specific_int_units = u.Fr ** 2 * u.Hz * u.s / (u.cm ** 3)
 '''KWARGS------------------------------'''
 '''Physical'''
 kw_nu0 = 230e9 * Hz
-# kw_nu0 = 86e9 * Hz
-# kw_nu0 = 345e9 * Hz
-kw_mass = (MMkg * u.kg).to(u.g)  # m87 mass as put in AART
+kw_mass = (MMkg * u.kg).to(u.g) 
 kw_scale_height = .5  # Angle
 kw_theta_b = 60 * (np.pi / 180) * rads
 kw_beta = 1
@@ -51,15 +49,10 @@ kw_n_th0 = 1.0726e+05 * cmcubed
 kw_t_e0 = 1.2428e+11 * kelv
 kw_bv_0 = 8.131273135591028 * gauss  # set from fitting b_func power law
 
-# kw_n_th0 = 1.23e6 * cmcubed
-
 
 '''Exponents'''
 kw_p_temp = -.84
 kw_p_dens = -.7
-# kw_p_temp = -.05
-# kw_p_dens = -.05
-# kw_p_bv = -0.8499999999965503  # set from fitting b_func power law
 kw_p_bv = -.3 # set from fitting b_func power law
 
 '''B_field '''
@@ -293,32 +286,8 @@ def synchrotron_func_I(x):
     """
     return 2.5651 * (1 + 1.92 * (x ** (-1 / 3)) + (0.9977 * x ** (-2 / 3))) * np.exp(-1.8899 * x ** (1 / 3))
 
-
-# beginning of Inoisy----------------------------------------------------------------------------------
-
-
-def inoisy_radius():
-    lowerbound = -30
-    upperbound = 30
-    gridsize = 1024
-    Xs = np.arange(lowerbound, upperbound, (upperbound - lowerbound) / gridsize)
-    Ys = np.arange(lowerbound, upperbound, (upperbound - lowerbound) / gridsize)
-
-    xx, yy = np.meshgrid(Xs, Ys)
-    xx, yy = np.meshgrid(Xs, Ys)
-    return np.sqrt(xx ** 2 + yy ** 2), Xs, Ys
-
-
-def inoisy_interp(envelope, scale):  # given an envelope, return noisy version to be evaluated at x and y grid
-    GRF = np.load("Inoisy_Snap_Keplerian_5.00_0.10_0.94_0.349.npy")
-    radius, Xs, Ys = inoisy_radius()
-    density = envelope * np.exp(scale * GRF - 1/2 * scale ** 2)
-    return RegularGridInterpolator((Xs, Ys), density, fill_value=1, bounds_error=False, method='linear')
-
-
-def inoisy_value(x, y, envelope, scale, units):  # return value of noisy parameter
+def inoisy_value(t, x, y, quantity, units, interpolator):  # return value of noisy parameter
     """
-
     :param x:
     :param y:
     :param envelope:
@@ -326,12 +295,10 @@ def inoisy_value(x, y, envelope, scale, units):  # return value of noisy paramet
     :param units:
     :return:
     """
-    interpolation = inoisy_interp(envelope, scale)
-    return interpolation(np.vstack([x, y]).T) * units
-
+    return quantity*interpolator(np.vstack([t,x, y]).T)
 
 # Ultrarelativistic
-def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, fk=kw_funckeys):
+def thermal_profile(coords, redshift, cosAng, interpolator, magAng=None, bp=kw_brightparams, fk=kw_funckeys):
     """
 
     Calculate the radial profile emission according to a thermal distribution
@@ -363,12 +330,12 @@ def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, f
 
     if (fk["theta_bkey"] == 0) and (cosAng is None):
         raise ValueError("Function key indicates variable theta_b in use, but no theta_b array provided")
-    rnoisy, Xs, Yx = inoisy_radius()
+ 
     # Temperature and Theta_e-------------------------------------------------------------------------------------------
-    tempnoisy = te_func(rnoisy, bp["mass"], bp["rb_0"], bp["t_e0"], bp["p_temp"])
+    tempnoisy = te_func(coords["r"], bp["mass"], bp["rb_0"], bp["t_e0"], bp["p_temp"])
     te_noisy_funcs = {
         0: partial(te_func, coords["r"], bp["mass"], bp["rb_0"], bp["t_e0"], bp["p_temp"]),
-        1: partial(inoisy_value, coords["x"], coords["y"], tempnoisy, bp["nscale"], kelv)
+        1: partial(inoisy_value, coords["t"], coords["x"], coords["y"], tempnoisy, kelv, interpolator)
     }
 
     temp = te_noisy_funcs[fk["tnoisykey"]]()
@@ -376,18 +343,18 @@ def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, f
     theta_e = theta_e_func(temp)
 
     # Density-----------------------------------------------------------------------------------------------------------
-    nthnoisy = nth_func(rnoisy, bp["mass"], bp["rb_0"], bp["n_th0"], bp["p_dens"])
+    nthnoisy = nth_func(coords["r"], bp["mass"], bp["rb_0"], bp["n_th0"], bp["p_dens"])
     n_noisy__funcs = {
         0: partial(nth_func, coords["r"], bp["mass"], bp["rb_0"], bp["n_th0"], bp["p_dens"]),
-        1: partial(inoisy_value, coords["x"], coords["y"], nthnoisy, bp["nscale"], cmcubed)
+        1: partial(inoisy_value, coords["t"], coords["x"], coords["y"], nthnoisy, cmcubed,interpolator)
     }
     n = n_noisy__funcs[fk["nnoisykey"]]()
 
     # Magnetic Field----------------------------------------------------------------------------------------------------
     b_fieldnoisyfuncs = {
         0: partial(b_func_true, bp["beta"], bp["r_ie"], theta_e_func(tempnoisy), nthnoisy),
-        1: partial(b_func_power, rnoisy, bp["mass"], bp["rb_0"]),
-        2: partial(b_func_power_variable, rnoisy, bp["mass"], bp["rb_0"], bp["b_0"], bp["p_mag"])
+        1: partial(b_func_power, coords["r"], bp["mass"], bp["rb_0"]),
+        2: partial(b_func_power_variable, coords["r"], bp["mass"], bp["rb_0"], bp["b_0"], bp["p_mag"])
     }
     bfieldnoisy = b_fieldnoisyfuncs[fk["bkey"]]()
 
@@ -399,7 +366,7 @@ def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, f
 
     b_field_noisy_funcs = {
         0: b_field_funcs[fk["bkey"]],
-        1: partial(inoisy_value, coords["x"], coords["y"], bfieldnoisy, bp["nscale"], gauss)
+        1: partial(inoisy_value, coords["t"], coords["x"], coords["y"], bfieldnoisy, gauss,interpolator)
     }
     b_field = b_field_noisy_funcs[fk["bnoisykey"]]()
 
@@ -427,12 +394,9 @@ def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, f
     acoeff_I_fluid = jcoeff_I_fluid / b_nu_fluid
     tau = acoeff_I_fluid * path_length_fluid
 
-    specific_intensity_thin = path_length_fluid * jcoeff_I_fluid * redshift ** 3
-    # brightness = ((c ** 2 / (2 * nu ** 2 * kB)) * specific_intensity_thin).to(u.K)
+    specific_intensity_thin = path_length_fluid * jcoeff_I_fluid * redshift ** gfactor
 
-    # specific_intensity_thick = inplus * np.exp(-tau) + redshift ** 3 * b_nu_fluid * (
-    #             1 - np.exp(- tau))
-    specific_intensity_thick = redshift ** 3 * b_nu_fluid * (1 - np.exp(- tau))
+    specific_intensity_thick = redshift ** gfactor * b_nu_fluid * (1 - np.exp(- tau))
 
     # Convert planck to brightness radial--------------------
     b_nu_fluid = brightness_temp(b_nu_fluid, bp["nu0"])
@@ -449,8 +413,6 @@ def thermal_profile(coords, redshift, cosAng, magAng=None, bp=kw_brightparams, f
     specific_intensity_thin_packed = specific_intensity_thin.reshape(1, specific_intensity_thin.shape[0])
     specific_intensity_thick_packed = specific_intensity_thick.reshape(1, specific_intensity_thick.shape[0])
 
-    # full_profiles = np.concatenate([r, theta_e.value, n.value, b_field.value, b_nu_fluid.value,
-    #                                 acoeff_I_fluid.value, tau_curve.value], axis=0)
 
     full_profiles = np.concatenate([r, theta_e.value, n.value, b_field.value, b_nu_fluid.value,
                                     acoeff_I_fluid.value, tau_curve.value, jcoeff_I_fluid_packed.value], axis=0)
@@ -472,8 +434,6 @@ def specific_intensity(temp,nu0):
 # WIP
 def power_profile():
     pass
-
-
 
 def total_jy(I, nu, mass):
     """Calculate totalt jasnky flux of a photon ring
@@ -522,7 +482,7 @@ def ring_radius(I0):
 
 
 # Returns index of first occurance of below percent diff
-def ring_convergance(xaxis,ring1,ring2, percent_diff):
+def ring_convergence(xaxis,ring1,ring2, percent_diff):
     num_of_observation_points = 1000
     x1=xaxis[0]
     x2=xaxis[len(xaxis)-1]
