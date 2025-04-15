@@ -1,13 +1,10 @@
 from aart_func import *
 
-model_name = "ModelA"
-
 #BH's Spin
 spin_case=15/16
 
 #Observer's inclination  
 i_case=17
-# i_case=1
 
 # Distance to the BH in meters (default: M87)
 dBH=5.214795112e23  
@@ -18,6 +15,7 @@ D_obs=10000
 
 #Velocity Profile for the gas
 
+#The CosAngle (cosine of the emission angle) currently just works for Keplerian velocities
 #Sub-Kepleniarity param
 sub_kep=1.0;
 #Radial velocity param
@@ -35,25 +33,22 @@ bvapp=0
 #If equal to 1, the sizes of the grids will be equal and an image can be computed
 #by summing the contributions    
 p_image=1
-limits=25
+limits=15
 #Resolution for the n=0 image [M]
-dx0 = 50/2000
+dx0 = 0.02
 #Resolution for the n=1 image [M]
-dx1 = 50/2000
+dx1 = 0.02
 #Resolution for the n=2 image [M]
-dx2 = 50/2000
+dx2 = 0.02
 
 # Projection angles for the radon transformation
 radonangles=[0,90]
 
-# Image treatment 
-fudge=1.5 #Fudge factor (For n>0)
-
-# Sample Equatorial Profile
-i_fname="Inoisy_Snap_Keplerian_5.00_0.10_0.94_0.349.npy"
+# inoisy movie file name
+i_fname="inoisy_256_128_30_1000_5.00_0.10_0.9400_1.00_1.00_1.00_0.349_137.0_137.0_1662.0.h5"
 
 # Stationary assumes a single inoisy frame. "stationary" or "dynamical" 
-disk="dynamical" 
+#disk="dynamical" 
 
 # inoisy initial time frame for single images
 i_frame=0
@@ -65,18 +60,13 @@ f_tM=12
 #Number of snapshots in that range    
 snapshots=12
 
+#ISCO and horizon values
 isco = rms(spin_case)
+horizon=1+np.sqrt(1-spin_case**2)
 
 #Magnetic field parametrs
 cr=0.0
 cphi=1.0
-
-#Hotspot
-#Radius of the hotspot
-radhs=8
-#Radius of the hotspot
-velhs=0.01
-rwidth = 0.5
 
 # Useful for disk visualizations or when studying truncated disks.
 # 0: Neglected
@@ -90,7 +80,6 @@ r_cutoff=20
 gfactor=3
 
 # Max baseline in G\lambda
-maxbaseline=500 
 
 # Number of points in the critical curve 
 npointsS=100    
