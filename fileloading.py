@@ -11,7 +11,7 @@ funckeys = {
         "theta_bkey": 0 # Variable impact parameter, 0 for varied, 1 for fixed
 }
 
-def createIntensityArgs(brightparams,lband="0",rtray="0",magAng="0",funckeys=funckeys):
+def createIntensityArgs(brightparams,funckeys=funckeys):
     args = ' '
     cmd1_args = {
         "nu0": '--nu ',
@@ -36,26 +36,21 @@ def createIntensityArgs(brightparams,lband="0",rtray="0",magAng="0",funckeys=fun
         "theta_bkey": '--thetabkey '
     }
 
-
-    # brightparams = fpp.bp_steeperT
-    # funckeys = fpp.fk_fiducial
-
     for arg in cmd1_args:
         args = args + cmd1_args[arg] + str(brightparams[arg]) + ' '
 
     for arg in cmd2_args:
         args = args + cmd2_args[arg] + str(funckeys[arg]) + ' '
 
-    args += "--lband " + lband + " --rtray " + rtray + " --magang " + magAng
-
     return 'python3 intensity.py' + args
 
 
-def intensityNameWrite(brightparams,funckeys=funckeys):
-    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
+def intensityNameWrite(brightparams,funckeys=funckeys,tsnap=0):
+    filename = path + ('Intensity_a_{}_i_{}_t_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
                        'b0_{}_pdens_{}_ptemp_{}_pmag_{}_nscale_{}_emkey_{}_bkey_{}_nkey_{}_tnkey_{}_bnkey_{}_magkey_{}.h5').format(
         params.spin_case,
         i_case,
+        tsnap,
         "{:.5e}".format(brightparams["nu0"].value),
         "{:.5e}".format(brightparams["mass"].value),
         float(brightparams["scale_height"]),
@@ -79,12 +74,13 @@ def intensityNameWrite(brightparams,funckeys=funckeys):
     return filename
 
 
-def intensityNameNoUnits(brightparams,funckeys=funckeys):
+def intensityNameNoUnits(brightparams,funckeys=funckeys,tsnap=0):
 
-    filename = path + ('Intensity_a_{}_i_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
+    filename = path + ('Intensity_a_{}_i_{}_t_{}_nu_{}_mass_{}_scaleh_{}_thetab_{}_rb_{}_nth0_{}_te0_{}_'
                        'b0_{}_pdens_{}_ptemp_{}_pmag_{}_nscale_{}_emkey_{}_bkey_{}_nkey_{}_tnkey_{}_bnkey_{}_magkey_{}.h5').format(
         params.spin_case,
         i_case,
+        tsnap,
         "{:.5e}".format(brightparams["nu0"]),
         "{:.5e}".format(brightparams["mass"]),
         float(brightparams["scale_height"]),

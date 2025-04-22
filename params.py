@@ -25,8 +25,6 @@ betaphi=1.0;
 
 # If equal to 1, the radon cuts profiles will be stored   
 radonfile=0
-# If equal to 1, the Beloborodov approximation will also be computed
-bvapp=0
  
 #For the Image resolution in the Bardeen coordinates
 #Limits for the image [M]. It should coincide with the inoisy if used.
@@ -56,9 +54,12 @@ i_frame=0
 # Initial and final times in units of M
 i_tM=0  
 #Makes sense when is less than the inosy temporal length 
-f_tM=12
+f_tM=100
 #Number of snapshots in that range    
-snapshots=12
+snapshots=20
+
+#When False, several quantities will be stored in the resulting files
+smallfiles=True
 
 #ISCO and horizon values
 isco = rms(spin_case)
