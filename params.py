@@ -45,18 +45,15 @@ radonangles=[0,90]
 # inoisy movie file name
 i_fname="inoisy_256_128_30_1000_5.00_0.10_0.9400_1.00_1.00_1.00_0.349_137.0_137.0_1662.0.h5"
 
-# Stationary assumes a single inoisy frame. "stationary" or "dynamical" 
-#disk="dynamical" 
-
 # inoisy initial time frame for single images
 i_frame=0
 
 # Initial and final times in units of M
 i_tM=0  
 #Makes sense when is less than the inosy temporal length 
-f_tM=100
+f_tM=1000
 #Number of snapshots in that range    
-snapshots=20
+snapshots=100
 
 #When False, several quantities will be stored in the resulting files
 smallfiles=True
@@ -85,7 +82,7 @@ gfactor=3
 # Number of points in the critical curve 
 npointsS=100    
 
-#For the parallel generation of images (movies)
+#For the parallel generation of images (movies) #Not implemented yet
 nthreads=4
 
 #Observer's inclination in radians
